@@ -94,9 +94,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         :attr:`~Permissions.manage_messages` bypass slowmode.
     nsfw: :class:`bool`
         If the channel is marked as "not safe for work".
-        
+
         .. note::
-        
+
             To check if the channel or the guild of that channel are marked as NSFW, consider :meth:`is_nsfw` instead.
     """
 
@@ -160,6 +160,14 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def members(self):
         """List[:class:`Member`]: Returns all members that can see this channel."""
         return [m for m in self.guild.members if self.permissions_for(m).read_messages]
+
+    @property
+    def threads(self):
+        """List[:class:`Thread`]: Returns all the threads that you can see.
+
+        .. versionadded:: 2.0
+        """
+        return [thread for thread in self.guild.threads if thread.parent_id == self.id]
 
     def is_nsfw(self):
         """:class:`bool`: Checks if the channel is NSFW."""
@@ -894,9 +902,9 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         top category is position 0.
     nsfw: :class:`bool`
         If the channel is marked as "not safe for work".
-        
+
         .. note::
-        
+
             To check if the channel or the guild of that channel are marked as NSFW, consider :meth:`is_nsfw` instead.
     """
 
@@ -1096,9 +1104,9 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         top channel is position 0.
     nsfw: :class:`bool`
         If the channel is marked as "not safe for work".
-        
+
         .. note::
-        
+
             To check if the channel or the guild of that channel are marked as NSFW, consider :meth:`is_nsfw` instead.
     """
     __slots__ = ('name', 'id', 'guild', '_state', 'nsfw',

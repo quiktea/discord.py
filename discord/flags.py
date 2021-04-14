@@ -262,6 +262,14 @@ class MessageFlags(BaseFlags):
         """
         return 16
 
+    @flag_value
+    def has_thread(self):
+        """:class:`bool`: Returns ``True`` if the source message is associated with a thread.
+
+        .. versionadded:: 2.0
+        """
+        return 32
+
 @fill_with_flags()
 class PublicUserFlags(BaseFlags):
     r"""Wraps up the Discord User Public flags.
