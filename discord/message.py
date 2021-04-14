@@ -22,10 +22,13 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import asyncio
 import datetime
 import re
 import io
+from typing import TYPE_CHECKING
 
 from . import utils
 from .reaction import Reaction
@@ -41,6 +44,7 @@ from .utils import escape_mentions
 from .guild import Guild
 from .mixins import Hashable
 from .sticker import Sticker
+from .threads import Thread
 
 __all__ = (
     'Attachment',
@@ -49,6 +53,9 @@ __all__ = (
     'MessageReference',
     'DeletedReferencedMessage',
 )
+
+if TYPE_CHECKING:
+    from .types.threads import ThreadArchiveDuration
 
 def convert_emoji_reaction(emoji):
     if isinstance(emoji, Reaction):
@@ -1259,6 +1266,46 @@ class Message(Hashable):
             You do not have the proper permissions to remove all the reactions.
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
+
+    async def start_public_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
+        """|coro|
+
+        Starts a public thread from this message.
+
+        You must have :attr:`~discord.Permissions.send_messages` and
+        :attr:`~discord.Permissions.use_threads` in order to start a thread.
+
+        The channel this message belongs in must be a :class:`TextChannel`.
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The name of the thread.
+        auto_archive_duration: :class:`int`
+            The duration in minutes before a thread is automatically archived for inactivity.
+            Defaults to ``1440`` or 24 hours.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to start a thread.
+        HTTPException
+            Starting the thread failed.
+        InvalidArgument
+            This message does not have guild info attached.
+        """
+        if self.guild is None:
+            raise InvalidArgument('This message does not have guild info attached.')
+
+        data = await self._state.http.start_public_thread(
+            self.channel.id,
+            self.id,
+            name=name,
+            auto_archive_duration=auto_archive_duration,
+            type=ChannelType.public_thread.value,
+        )
+        return Thread(guild=self.guild, data=data)  # type: ignore
+
 
     async def reply(self, content=None, **kwargs):
         """|coro|
